@@ -19,7 +19,7 @@ public class Welcome_Scene {
         this.manager = manager;
     }
     public Scene createScene(){
-        KBCGame kbcGame = new KBCGame();
+
         VBox welcome_layout_verti = new VBox(20);
         HBox welcome_layout_hori = new HBox(30);
         VBox welcome_layout = new VBox(20);

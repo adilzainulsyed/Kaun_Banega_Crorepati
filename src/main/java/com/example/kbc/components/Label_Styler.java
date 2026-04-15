@@ -12,7 +12,7 @@ public class Label_Styler extends Label {
                             "-fx-font-size: 35px;" +
                             "-fx-text-fill: linear-gradient(#ffd700, #ffb300);" +
                             "-fx-font-weight: bold;" +
-                            "-fx-effect: dropshadow(gaussian, gold, 20, 0.3, 0, 0);"
+                            "-fx-effect: dropshadow(gaussian, gold, 20, 0.1, 0, 0);"
             );
         } else {
             setStyle(
