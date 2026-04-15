@@ -1,13 +1,18 @@
 package com.example.kbc.scenes;
 
 import com.example.kbc.Scene_Manager;
+import com.example.kbc.components.Label_Styler;
 import com.example.kbc.components.Question;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +21,7 @@ public class Questions_Scene {
     private Scene_Manager manager;
     List<Question> questions = new ArrayList<>();
     int currentQuestionIndex = 0;
+    String[] prizemoney = {"1,000", "5,000", "10,000", "50,000", "1,00,000", "10,00,000","25,00,000", "50,00,000","1,00,00,000","7,00,00,000" };
 
     Questions_Scene(Scene_Manager manager){
         this.manager = manager;
@@ -59,7 +65,7 @@ public class Questions_Scene {
         ));
 
         questions.add(new Question(
-                "Which was batch was MIT Bengaluru's first batch?",
+                "Which batch was MIT Bengaluru's first batch?",
                 new String[]{"batch of 2025", "batch of 2026", "batch of 2024", "batch of 2023"},
                 0
         ));
@@ -135,13 +141,40 @@ public class Questions_Scene {
                 if (index == current.getCorrectAnswer()) {
                     System.out.println("Correct!");
                     currentQuestionIndex++;
-                    if (currentQuestionIndex < questions.size()) {
+                    if (currentQuestionIndex < 10) {
                         loadQuestion(questions.get(currentQuestionIndex), questionLabel, optionButtons);
                     } else {
+                        Image logo = new Image(getClass().getResource("/res/logo.png").toExternalForm());
                         System.out.println("YOU WON 7 CRORES!!!!!!!!!!");
+                        Stage gamewin = new Stage();
+                        gamewin.getIcons().add(logo);
+                        gamewin.setTitle("Thank you for playing!");
+                        VBox gamewinlayout = new VBox(10);
+                        Label_Styler gamewintext = new Label_Styler("YOU WON 7 CRORES!!!!!!!!!!","title");
+                        gamewinlayout.getChildren().addAll(gamewintext);
+                        gamewinlayout.setAlignment(Pos.CENTER);
+                        Scene gameoverscene = new Scene(gamewinlayout,600,300);
+                        gamewinlayout.setStyle("-fx-background-color: green;");
+                        gamewin.setScene(gameoverscene);
+                        gamewin.show();
+                        manager.getStage().close();
                     }
                 } else {
+                    Image logo = new Image(getClass().getResource("/res/logo.png").toExternalForm());
                     System.out.println("Wrong answer! Game Over");
+                    Stage gameover = new Stage();
+                    gameover.getIcons().add(logo);
+                    gameover.setTitle("Thank you for playing!");
+                    VBox gameoverlayout = new VBox(10);
+                    Label_Styler gameovertext1 = new Label_Styler("Wrong Answer, Game Over!","text");
+                    Label_Styler gameovertext2 = new Label_Styler("You won "+"₹"+((currentQuestionIndex > 0) ?prizemoney[currentQuestionIndex-1] : 0),"text");
+                    gameoverlayout.getChildren().addAll(gameovertext1,gameovertext2);
+                    gameoverlayout.setAlignment(Pos.CENTER);
+                    Scene gameoverscene = new Scene(gameoverlayout,600,300);
+                    gameoverlayout.setStyle("-fx-background-color: red;");
+                    gameover.setScene(gameoverscene);
+                    gameover.show();
+                    manager.getStage().close();
                 }
             });
         }

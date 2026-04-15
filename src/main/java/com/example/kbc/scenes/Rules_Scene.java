@@ -64,6 +64,4 @@ public class Rules_Scene {
         );
         return new Scene(root, 1500, 700);
     }
-
-
 }

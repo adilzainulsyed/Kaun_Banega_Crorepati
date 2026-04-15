@@ -27,7 +27,8 @@ public class KBCGame extends Application {
         stage.setTitle("Kaun Banega Crorepati!");
         stage.getIcons().add(logo);
         stage.setScene(welcome_scene.createScene());
-        //stage.setFullScreen(true);
+        stage.setFullScreen(true);
+        stage.setFullScreenExitHint("");
         stage.show();
     }
 
