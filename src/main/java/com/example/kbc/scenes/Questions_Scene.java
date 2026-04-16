@@ -3,6 +3,7 @@ package com.example.kbc.scenes;
 import com.example.kbc.Scene_Manager;
 import com.example.kbc.components.Label_Styler;
 import com.example.kbc.components.Question;
+import javafx.animation.PauseTransition;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -13,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,18 +97,42 @@ public class Questions_Scene {
                 0
         ));
     }
-    private void loadQuestion(Question q, Label questionLabel, Button[] optionButtons) {
-
+    private void loadQuestion(Question q, Label questionLabel, Button[] optionButtons, Label que_no, Label prize) {
         questionLabel.setText(q.getQuestionText());
+        que_no.setText("Question " + (currentQuestionIndex + 1));
+        prize.setText("Prize: ₹" + prizemoney[currentQuestionIndex]);
 
         for (int i = 0; i < 4; i++) {
             optionButtons[i].setText(q.getOptions()[i]);
+        }
+    }
+    private void resetButtonStyles(Button[] buttons) {
+        for (Button b : buttons) {
+            b.setStyle(
+                    "-fx-background-color: linear-gradient(#1e3c72, #2a5298);" +
+                            "-fx-text-fill: white;" +
+                            "-fx-font-size: 14px;" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-background-radius: 10;"
+            );
         }
     }
     public Scene createScene(){
         VBox root = new VBox(40);
         root.setAlignment(Pos.CENTER);
 
+        Label que_no = new Label();
+        que_no.setStyle(
+                "-fx-font-size: 24px;" +
+                        "-fx-text-fill: gold;" +
+                        "-fx-font-weight: bold;"
+        );
+        Label prize = new Label();
+        prize.setStyle(
+                "-fx-font-size: 24px;" +
+                        "-fx-text-fill: gold;" +
+                        "-fx-font-weight: bold;"
+        );
         Label questionLabel = new Label();
         questionLabel.setStyle(
                 "-fx-font-size: 24px;" +
@@ -136,54 +162,137 @@ public class Questions_Scene {
         // logic for correct, wrong and win
         for (int i = 0; i < 4; i++) {
             int index = i;
+
             optionButtons[i].setOnAction(e -> {
+
                 Question current = questions.get(currentQuestionIndex);
-                if (index == current.getCorrectAnswer()) {
-                    System.out.println("Correct!");
-                    currentQuestionIndex++;
-                    if (currentQuestionIndex < 10) {
-                        loadQuestion(questions.get(currentQuestionIndex), questionLabel, optionButtons);
+
+                // disabling the buttons during animation
+                for (Button b : optionButtons) {
+                    b.setDisable(true);
+                }
+
+                // colour is yellow so that there is uncertainity about answer being correct or wrong
+                optionButtons[index].setStyle(
+                        "-fx-background-color: yellow;" +
+                                "-fx-text-fill: white;" +
+                                "-fx-font-weight: bold;"+"-fx-effect: dropshadow(gaussian, yellow, 20, 0.7, 0, 0);"
+                );
+
+                // Pausing for suspense
+                PauseTransition pause1 = new PauseTransition(Duration.seconds(0.75));
+
+                pause1.setOnFinished(
+                        ev-> {
+                            if (index == current.getCorrectAnswer()) {
+
+                                // correct -> green
+                                optionButtons[index].setStyle(
+                                        "-fx-background-color: green;" +
+                                                "-fx-text-fill: white;" +
+                                                "-fx-font-weight: bold;"+"-fx-effect: dropshadow(gaussian, lime, 20, 0.7, 0, 0);"
+                                );
+
+                            } else {
+
+                                // wrong -> red
+                                optionButtons[index].setStyle(
+                                        "-fx-background-color: red;" +
+                                                "-fx-text-fill: white;" +
+                                                "-fx-font-weight: bold;"+"-fx-effect: dropshadow(gaussian, red, 20, 0.7, 0, 0);"
+                                );
+
+                                // ALSO show correct answer in green (even if wrong)
+                                optionButtons[current.getCorrectAnswer()].setStyle(
+                                        "-fx-background-color: green;" +
+                                                "-fx-text-fill: white;" +
+                                                "-fx-font-weight: bold;"+"-fx-effect: dropshadow(gaussian, lime, 20, 0.7, 0, 0);"
+                                );
+                            }
+                        }
+                );
+                pause1.play();
+
+                // Pausing to show if answer is correct or not
+                PauseTransition pause2 = new PauseTransition(Duration.seconds(1.25));
+
+                pause2.setOnFinished(ev -> {
+
+                    if (index == current.getCorrectAnswer()) {
+
+                        currentQuestionIndex++;
+
+                        if (currentQuestionIndex < 10) {
+
+                            // Reset button styles
+                            resetButtonStyles(optionButtons);
+
+                            // enabling the button again
+                            for (Button b : optionButtons) {
+                                b.setDisable(false);
+                            }
+
+                            loadQuestion(questions.get(currentQuestionIndex), questionLabel, optionButtons, que_no, prize);
+                        } else {
+                            Image logo = new Image(getClass().getResource("/res/logo.png").toExternalForm());
+                            System.out.println("YOU WON 7 CRORES!!!!!!!!!!");
+                            Stage gamewin = new Stage();
+                            gamewin.getIcons().add(logo);
+                            gamewin.setTitle("Thank you for playing!");
+                            VBox gamewinlayout = new VBox(10);
+                            Label_Styler gamewintext = new Label_Styler("YOU WON 7 CRORES!!!!!!!!!!","title");
+                            gamewinlayout.getChildren().addAll(gamewintext);
+                            gamewinlayout.setAlignment(Pos.CENTER);
+                            Scene gameoverscene = new Scene(gamewinlayout,660,441);
+                            String bgPath = getClass().getResource("/res/happy_amithab.gif").toExternalForm();
+                            gamewinlayout.setStyle(
+                                    "-fx-background-image: url('" + bgPath + "');" +
+                                            "-fx-background-size: cover;" +
+                                            "-fx-background-position: center;"
+                            );
+                            gamewin.setScene(gameoverscene);
+                            gamewin.show();
+
+                            manager.getStage().close();
+                        }
+
                     } else {
                         Image logo = new Image(getClass().getResource("/res/logo.png").toExternalForm());
-                        System.out.println("YOU WON 7 CRORES!!!!!!!!!!");
-                        Stage gamewin = new Stage();
-                        gamewin.getIcons().add(logo);
-                        gamewin.setTitle("Thank you for playing!");
-                        VBox gamewinlayout = new VBox(10);
-                        Label_Styler gamewintext = new Label_Styler("YOU WON 7 CRORES!!!!!!!!!!","title");
-                        gamewinlayout.getChildren().addAll(gamewintext);
-                        gamewinlayout.setAlignment(Pos.CENTER);
-                        Scene gameoverscene = new Scene(gamewinlayout,600,300);
-                        gamewinlayout.setStyle("-fx-background-color: green;");
-                        gamewin.setScene(gameoverscene);
-                        gamewin.show();
+                        System.out.println("Wrong answer! Game Over");
+                        Stage gameover = new Stage();
+                        gameover.getIcons().add(logo);
+                        gameover.setTitle("Thank you for playing!");
+                        VBox gameoverlayout = new VBox(10);
+                        Label_Styler gameovertext1 = new Label_Styler("Wrong Answer, Game Over!","text");
+                        Label_Styler gameovertext2 = new Label_Styler("You won "+"₹"+((currentQuestionIndex > 0) ?prizemoney[currentQuestionIndex-1] : 0),"text");
+                        gameoverlayout.getChildren().addAll(gameovertext1,gameovertext2);
+                        gameoverlayout.setAlignment(Pos.CENTER);
+                        Scene gameoverscene = new Scene(gameoverlayout,660,441);
+                        String bgPath = getClass().getResource("/res/sad_amithab.gif").toExternalForm();
+                        gameoverlayout.setStyle(
+                                "-fx-background-image: url('" + bgPath + "');" +
+                                        "-fx-background-size: cover;" +
+                                        "-fx-background-position: center;"
+                        );
+                        gameover.setScene(gameoverscene);
+                        gameover.show();
                         manager.getStage().close();
                     }
-                } else {
-                    Image logo = new Image(getClass().getResource("/res/logo.png").toExternalForm());
-                    System.out.println("Wrong answer! Game Over");
-                    Stage gameover = new Stage();
-                    gameover.getIcons().add(logo);
-                    gameover.setTitle("Thank you for playing!");
-                    VBox gameoverlayout = new VBox(10);
-                    Label_Styler gameovertext1 = new Label_Styler("Wrong Answer, Game Over!","text");
-                    Label_Styler gameovertext2 = new Label_Styler("You won "+"₹"+((currentQuestionIndex > 0) ?prizemoney[currentQuestionIndex-1] : 0),"text");
-                    gameoverlayout.getChildren().addAll(gameovertext1,gameovertext2);
-                    gameoverlayout.setAlignment(Pos.CENTER);
-                    Scene gameoverscene = new Scene(gameoverlayout,600,300);
-                    gameoverlayout.setStyle("-fx-background-color: red;");
-                    gameover.setScene(gameoverscene);
-                    gameover.show();
-                    manager.getStage().close();
-                }
+                });
+
+                pause2.play();
             });
         }
-        loadQuestion(questions.get(currentQuestionIndex), questionLabel, optionButtons);
-        for (Button b : optionButtons) {
+        loadQuestion(questions.get(currentQuestionIndex), questionLabel, optionButtons, que_no, prize);        for (Button b : optionButtons) {
             options.getChildren().add(b);
         }
 
-        root.getChildren().addAll(questionLabel, options);
+        HBox topBar = new HBox(50);
+        topBar.setAlignment(Pos.CENTER);
+
+        topBar.getChildren().addAll(que_no, prize);
+
+        root.getChildren().addAll(topBar,questionLabel, options);
 
         String bgPath = getClass().getResource("/res/background.jpg").toExternalForm();
         root.setStyle(
