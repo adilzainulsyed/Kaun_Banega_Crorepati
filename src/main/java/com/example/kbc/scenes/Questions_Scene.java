@@ -24,6 +24,10 @@ public class Questions_Scene {
     List<Question> questions = new ArrayList<>();
     int currentQuestionIndex = 0;
     String[] prizemoney = {"1,000", "5,000", "10,000", "50,000", "1,00,000", "10,00,000","25,00,000", "50,00,000","1,00,00,000","7,00,00,000" };
+    boolean used5050 = false;
+    boolean usedPhone = false;
+    boolean usedExpert = false;
+    boolean usedFlip = false;
 
     Questions_Scene(Scene_Manager manager){
         this.manager = manager;
@@ -93,8 +97,8 @@ public class Questions_Scene {
         // FLIP QUESTION:
         questions.add(new Question(
                 "Solve these 2 equations:\n \t 5x + 4y = 13\n \t 10x - 3y = 4",
-                new String[]{"x = 1 and y = 2", "x = 2 and y = 2", "x = 1 and y = 1", "x = 2 and y = 1"},
-                0
+                new String[]{"x = 2 and y = 2", "x = 1 and y = 2", "x = 1 and y = 1", "x = 2 and y = 1"},
+                1
         ));
     }
     private void loadQuestion(Question q, Label questionLabel, Button[] optionButtons, Label que_no, Label prize) {
@@ -104,6 +108,10 @@ public class Questions_Scene {
 
         for (int i = 0; i < 4; i++) {
             optionButtons[i].setText(q.getOptions()[i]);
+        }
+        for (Button b : optionButtons) {
+            b.setDisable(false);
+            b.setOpacity(1);
         }
     }
     private void resetButtonStyles(Button[] buttons) {
@@ -159,6 +167,125 @@ public class Questions_Scene {
             );
         }
 
+        HBox topBar = new HBox(50);
+        topBar.setAlignment(Pos.CENTER);
+        topBar.getChildren().addAll(que_no, prize);
+
+        Button phone_a_friend = new Button("Phone A Friend");
+        phone_a_friend.setStyle(
+                "-fx-background-color: linear-gradient(#1e3c72, #2a5298);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 10;"
+        );
+        phone_a_friend.setOnAction(e -> {
+            if (usedPhone) return;
+
+            usedPhone = true;
+            phone_a_friend.setDisable(true);
+
+            Question current = questions.get(currentQuestionIndex);
+
+            int guess;
+            if (Math.random() < 0.7) {
+                guess = current.getCorrectAnswer(); // 70% correct
+            } else {
+                guess = (int)(Math.random() * 4);
+            }
+
+            Stage popup = new Stage();
+            VBox box = new VBox(10);
+
+            Label_Styler msg = new Label_Styler(
+                    "Friend thinks answer is: " + current.getOptions()[guess],
+                    "text"
+            );
+
+            box.getChildren().add(msg);
+            box.setAlignment(Pos.CENTER);
+
+            popup.setScene(new Scene(box, 300, 200));
+            popup.show();
+        });
+        Button fifty_fifty = new Button("50/50");
+        fifty_fifty.setStyle(
+                "-fx-background-color: linear-gradient(#1e3c72, #2a5298);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 10;"
+        );
+        fifty_fifty.setOnAction(e -> {
+            if (used5050) return;
+
+            used5050 = true;
+            fifty_fifty.setDisable(true);
+
+            Question current = questions.get(currentQuestionIndex);
+            int correct = current.getCorrectAnswer();
+
+            int removed = 0;
+
+            for (int i = 0; i < 4; i++) {
+                if (i != correct && removed < 2) {
+                    optionButtons[i].setDisable(true);
+                    optionButtons[i].setOpacity(0.3);
+                    removed++;
+                }
+            }
+        });
+
+        Button expert_advice = new Button("Expert Advice");
+        expert_advice.setStyle(
+                "-fx-background-color: linear-gradient(#1e3c72, #2a5298);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 10;"
+        );
+        expert_advice.setOnAction(e -> {
+            if (usedExpert) return;
+
+            usedExpert = true;
+            expert_advice.setDisable(true);
+
+        });
+        Button flip_the_question = new Button("Flip the Question");
+        flip_the_question.setStyle(
+                "-fx-background-color: linear-gradient(#1e3c72, #2a5298);" +
+                        "-fx-text-fill: white;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 10;"
+        );
+        flip_the_question.setOnAction(e -> {
+            if (usedFlip) return;
+
+            usedFlip = true;
+            flip_the_question.setDisable(true);
+
+            Question newQ = questions.get(questions.size() - 1);
+
+
+            loadQuestion(newQ, questionLabel, optionButtons, que_no, prize);
+        });
+        String lifelineStyle =
+                "-fx-background-color: linear-gradient(#ffd700, #ffb300);" +
+                        "-fx-text-fill: black;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-padding: 10 15;" +
+                        "-fx-effect: dropshadow(gaussian, gold, 10, 0.5, 0, 0);";
+
+        phone_a_friend.setStyle(lifelineStyle);
+        fifty_fifty.setStyle(lifelineStyle);
+        expert_advice.setStyle(lifelineStyle);
+        flip_the_question.setStyle(lifelineStyle);
+
+        HBox bottomBar = new HBox(30);
+        bottomBar.setAlignment(Pos.CENTER);
+        bottomBar.getChildren().addAll(phone_a_friend,fifty_fifty,expert_advice,flip_the_question);
         // logic for correct, wrong and win
         for (int i = 0; i < 4; i++) {
             int index = i;
@@ -287,12 +414,7 @@ public class Questions_Scene {
             options.getChildren().add(b);
         }
 
-        HBox topBar = new HBox(50);
-        topBar.setAlignment(Pos.CENTER);
-
-        topBar.getChildren().addAll(que_no, prize);
-
-        root.getChildren().addAll(topBar,questionLabel, options);
+        root.getChildren().addAll(topBar,questionLabel, options, bottomBar);
 
         String bgPath = getClass().getResource("/res/background.jpg").toExternalForm();
         root.setStyle(
